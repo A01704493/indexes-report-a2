@@ -4,26 +4,71 @@ on:
   push:
     branches:
       - main  # or your default branch
+  workflow_dispatch: # Allow manual triggering
+
+permissions:
+  contents: write # Needed for deployment
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Important for proper Git history
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '18'
+          cache: 'npm' # Cache npm dependencies
+      
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
       - name: Install dependencies (if needed in the future)
         run: |
           # If you add npm dependencies later, uncomment this
           # npm install
 
+      - name: Set up Python (for PDF generation)
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+      
+      - name: Install Python dependencies
+        run: |
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          fi
+
+      - name: Build and optimize
+        run: |
+          # Add any build steps if needed
+          echo "Building for deployment..."
+          # You can add minification, bundling etc. here if needed
+
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: .  # The folder the action should deploy
-          branch: gh-pages  # The branch the action should deploy to 
+          branch: gh-pages  # The branch the action should deploy to
+          clean: true  # Automatically remove deleted files
+          commit-message: "Deploy: ${{ github.event.head_commit.message }}"
+          single-commit: false  # Keep commit history
+
+      - name: Update deployment status
+        run: |
+          echo "🚀 Deployment to GitHub Pages complete!"
+          echo "Visit your site at: https://${{ github.repository_owner }}.github.io/indexes-report-a2/" 

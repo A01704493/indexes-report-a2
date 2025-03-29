@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Stock Market Indices Analysis (2013-2023)</title>
+    <meta name="description" content="An interactive analysis of the top 10 global stock market indices over the past decade, with performance metrics, volatility analysis, and market insights.">
+    <meta name="keywords" content="stock market, indices, financial analysis, investing, S&P 500, NASDAQ, Dow Jones, FTSE 100, DAX, Nikkei 225">
+    <meta name="author" content="Market Indices Analysis Team">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="favicon.svg">
+    
+    <!-- Open Graph Meta Tags for social sharing -->
+    <meta property="og:title" content="Global Stock Market Indices Analysis (2013-2023)">
+    <meta property="og:description" content="Interactive analysis of global market indices with performance metrics and insights">
+    <meta property="og:image" content="https://via.placeholder.com/1200x630?text=Stock+Market+Indices+Analysis">
+    <meta property="og:url" content="https://username.github.io/indexes-report-a2/">
+    <meta property="og:type" content="website">
+    
+    <!-- CSS Libraries -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="src/css/style.css">
+    
+    <!-- Chart.js and extensions -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-chart-line me-2"></i>Market Indices Analysis
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#introduction">Overview</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#performance-chart">Performance</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#best-performers">Top Indices</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#worst-performers">Underperformers</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#fundamental-analysis">Analysis</a>
+                    </li>
+                </ul>
+                <div class="nav-buttons ms-3 d-none d-lg-flex">
+                    <button id="dark-mode-toggle" class="btn btn-sm btn-outline-light me-2" aria-label="Toggle dark mode">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <header class="py-5 text-white text-center">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <h1 class="display-4 fw-bold">Global Stock Market Indices</h1>
+                    <p class="lead mb-4">10-Year Performance Analysis (2013-2023)</p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="#" id="download-pdf" class="btn btn-light btn-lg">
+                            <i class="fas fa-file-pdf me-2"></i>Download PDF Report
+                        </a>
+                        <a href="https://github.com/username/indexes-report-a2" target="_blank" class="btn btn-outline-light btn-lg">
+                            <i class="fab fa-github me-2"></i>View on GitHub
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="header-waves">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="#ffffff" fill-opacity="1" d="M0,192L48,176C96,160,192,128,288,122.7C384,117,480,139,576,165.3C672,192,768,224,864,213.3C960,203,1056,149,1152,138.7C1248,128,1344,160,1392,176L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>
+        </div>
+    </header>
+
+    <main class="container my-5">
+        <!-- Introduction Section -->
+        <section id="introduction" class="mb-5 card-section">
+            <div class="section-card">
+                <h2><i class="fas fa-info-circle section-icon"></i>Introduction</h2>
+                <p class="lead">This report analyzes the performance of 10 major global stock market indices over the past decade, with a special focus on the best and worst performers.</p>
+                <p>Understanding how different market indices have performed provides crucial insights for investors seeking global diversification. This analysis covers performance trends, volatility patterns, and fundamental factors that have influenced markets over the last decade.</p>
+                
+                <div class="report-highlights mt-4">
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="highlight-card">
+                                <div class="highlight-icon">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <h4>Performance Analysis</h4>
+                                <p>Comparative analysis of index returns over 10 years with key growth metrics</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="highlight-card">
+                                <div class="highlight-icon">
+                                    <i class="fas fa-bolt"></i>
+                                </div>
+                                <h4>Volatility Assessment</h4>
+                                <p>Risk-return profiles with volatility measurements and market correlation</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="highlight-card">
+                                <div class="highlight-icon">
+                                    <i class="fas fa-magnifying-glass-chart"></i>
+                                </div>
+                                <h4>Market Insights</h4>
+                                <p>In-depth fundamental analysis of market drivers and economic factors</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Overview Table Section -->
+        <section id="overview" class="mb-5 card-section">
+            <div class="section-card">
+                <h2><i class="fas fa-globe section-icon"></i>Overview of Analyzed Indices</h2>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Index</th>
+                                <th>Country/Region</th>
+                                <th>10-Year Return</th>
+                                <th>Volatility</th>
+                                <th>Trend</th>
+                            </tr>
+                        </thead>
+                        <tbody id="indices-table">
+                            <!-- This will be populated via JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="note mt-3">
+                    <small><i class="fas fa-info-circle me-1"></i>Returns are calculated based on price appreciation without accounting for dividends</small>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Performance Chart Section -->
+        <section id="performance-chart" class="mb-5 card-section">
+            <div class="section-card">
+                <h2><i class="fas fa-chart-line section-icon"></i>Performance Comparison</h2>
+                <div class="chart-container">
+                    <canvas id="mainChart"></canvas>
+                </div>
+                <div class="chart-controls mt-3 d-flex justify-content-between align-items-center">
+                    <div class="text-muted">
+                        <small><i class="fas fa-info-circle me-1"></i>Click on the legend items to show/hide specific indices</small>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-outline-primary" id="resetZoom">
+                            <i class="fas fa-arrows-to-dot me-1"></i>Reset Zoom
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Best Performers Section -->
+        <section id="best-performers" class="mb-5">
+            <h2 class="section-title"><i class="fas fa-trophy me-2"></i>Best Performing Indices</h2>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="performer-card top-performer">
+                        <div class="performer-header">
+                            <span class="badge">Top Performer #1</span>
+                        </div>
+                        <div class="performer-body">
+                            <h3 id="best-index-1">Loading...</h3>
+                            <div class="performer-stats mb-3">
+                                <div class="row g-2 text-center">
+                                    <div class="col-4">
+                                        <div class="stat-card">
+                                            <div class="stat-value" id="best1-total-return">--</div>
+                                            <div class="stat-label">Total Return</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="stat-card">
+                                            <div class="stat-value" id="best1-annual-return">--</div>
+                                            <div class="stat-label">Annual</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="stat-card">
+                                            <div class="stat-value" id="best1-volatility">--</div>
+                                            <div class="stat-label">Volatility</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="bestChart1"></canvas>
+                            </div>
+                            <div id="best-analysis-1" class="mt-3 performer-analysis">
+                                <!-- Analysis content will be added via JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="performer-card top-performer">
+                        <div class="performer-header">
+                            <span class="badge">Top Performer #2</span>
+                        </div>
+                        <div class="performer-body">
+                            <h3 id="best-index-2">Loading...</h3>
+                            <div class="performer-stats mb-3">
+                                <div class="row g-2 text-center">
+                                    <div class="col-4">
+                                        <div class="stat-card">
+                                            <div class="stat-value" id="best2-total-return">--</div>
+                                            <div class="stat-label">Total Return</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="stat-card">
+                                            <div class="stat-value" id="best2-annual-return">--</div>
+                                            <div class="stat-label">Annual</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="stat-card">
+                                            <div class="stat-value" id="best2-volatility">--</div>
+                                            <div class="stat-label">Volatility</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="bestChart2"></canvas>
+                            </div>
+                            <div id="best-analysis-2" class="mt-3 performer-analysis">
+                                <!-- Analysis content will be added via JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Worst Performers Section -->
+        <section id="worst-performers" class="mb-5">
+            <h2 class="section-title"><i class="fas fa-arrow-trend-down me-2"></i>Worst Performing Indices</h2>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="performer-card bottom-performer">
+                        <div class="performer-header">
+                            <span class="badge">Worst Performer #1</span>
+                        </div>
+                        <div class="performer-body">
+                            <h3 id="worst-index-1">Loading...</h3>
+                            <div class="performer-stats mb-3">
+                                <div class="row g-2 text-center">
+                                    <div class="col-4">
+                                        <div class="stat-card">
+                                            <div class="stat-value" id="worst1-total-return">--</div>
+                                            <div class="stat-label">Total Return</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="stat-card">
+                                            <div class="stat-value" id="worst1-annual-return">--</div>
+                                            <div class="stat-label">Annual</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="stat-card">
+                                            <div class="stat-value" id="worst1-volatility">--</div>
+                                            <div class="stat-label">Volatility</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="worstChart1"></canvas>
+                            </div>
+                            <div id="worst-analysis-1" class="mt-3 performer-analysis">
+                                <!-- Analysis content will be added via JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="performer-card bottom-performer">
+                        <div class="performer-header">
+                            <span class="badge">Worst Performer #2</span>
+                        </div>
+                        <div class="performer-body">
+                            <h3 id="worst-index-2">Loading...</h3>
+                            <div class="performer-stats mb-3">
+                                <div class="row g-2 text-center">
+                                    <div class="col-4">
+                                        <div class="stat-card">
+                                            <div class="stat-value" id="worst2-total-return">--</div>
+                                            <div class="stat-label">Total Return</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="stat-card">
+                                            <div class="stat-value" id="worst2-annual-return">--</div>
+                                            <div class="stat-label">Annual</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="stat-card">
+                                            <div class="stat-value" id="worst2-volatility">--</div>
+                                            <div class="stat-label">Volatility</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="worstChart2"></canvas>
+                            </div>
+                            <div id="worst-analysis-2" class="mt-3 performer-analysis">
+                                <!-- Analysis content will be added via JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Fundamental Analysis Section -->
+        <section id="fundamental-analysis" class="mb-5 card-section">
+            <div class="section-card">
+                <h2><i class="fas fa-magnifying-glass-chart section-icon"></i>Fundamental Analysis</h2>
+                <div class="accordion custom-accordion" id="fundamentalAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                                <i class="fas fa-coins me-2"></i>Economic Factors
+                            </button>
+                        </h2>
+                        <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#fundamentalAccordion">
+                            <div class="accordion-body" id="economic-factors">
+                                <!-- Content will be added via JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                                <i class="fas fa-face-smile me-2"></i>Market Sentiment
+                            </button>
+                        </h2>
+                        <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#fundamentalAccordion">
+                            <div class="accordion-body" id="market-sentiment">
+                                <!-- Content will be added via JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
+                                <i class="fas fa-building me-2"></i>Sectoral Analysis
+                            </button>
+                        </h2>
+                        <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#fundamentalAccordion">
+                            <div class="accordion-body" id="sectoral-analysis">
+                                <!-- Content will be added via JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Volatility Analysis Section -->
+        <section id="volatility-analysis" class="mb-5 card-section">
+            <div class="section-card">
+                <h2><i class="fas fa-bolt section-icon"></i>Volatility Comparison</h2>
+                <div class="chart-container">
+                    <canvas id="volatilityChart"></canvas>
+                </div>
+                <div id="volatility-explanation" class="mt-4">
+                    <!-- Content will be added via JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Conclusion Section -->
+        <section id="conclusion" class="mb-5 card-section">
+            <div class="section-card">
+                <h2><i class="fas fa-check-circle section-icon"></i>Conclusion</h2>
+                <div id="conclusion-content">
+                    <!-- Content will be added via JavaScript -->
+                </div>
+                <div class="text-center mt-4">
+                    <a href="#" id="download-pdf-footer" class="btn btn-primary">
+                        <i class="fas fa-file-pdf me-2"></i>Download Complete PDF Report
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-white py-4">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <h5><i class="fas fa-chart-line me-2"></i>Global Stock Market Indices Analysis</h5>
+                    <p class="mb-2">A comprehensive 10-year analysis of global market performance.</p>
+                    <div class="social-links">
+                        <a href="https://github.com/username/indexes-report-a2" class="me-3" target="_blank" aria-label="GitHub Repository">
+                            <i class="fab fa-github"></i>
+                        </a>
+                        <a href="#" class="me-3" aria-label="Twitter">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" aria-label="LinkedIn">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-1">
+                        <i class="fas fa-database me-1"></i>Data sourced from financial markets APIs
+                    </p>
+                    <p class="mb-1">
+                        <i class="fas fa-code me-1"></i>Built with Chart.js and Bootstrap 5
+                    </p>
+                    <p class="mb-0">
+                        <i class="far fa-copyright me-1"></i>2023-2024 Stock Market Indices Analysis
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Container for Notifications -->
+    <div class="toast-container"></div>
+
+    <!-- Back to Top Button -->
+    <a href="#" id="back-to-top" class="back-to-top" aria-label="Back to top">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="src/js/main.js"></script>
+    <script src="src/js/charts.js"></script>
+</body>
+</html>

@@ -26,21 +26,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          cache: 'npm' # Cache npm dependencies
       
-      - name: Cache dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Install dependencies (if needed in the future)
-        run: |
-          # If you add npm dependencies later, uncomment this
-          # npm install
-
       - name: Set up Python (for PDF generation)
         uses: actions/setup-python@v4
         with:

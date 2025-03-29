@@ -10,78 +10,41 @@
 
 // Configuration for the indices we're analyzing
 const INDICES = [
-    { symbol: 'SPX', name: 'S&P 500', country: 'United States' },
-    { symbol: 'DJIA', name: 'Dow Jones Industrial Average', country: 'United States' },
-    { symbol: 'COMP', name: 'NASDAQ Composite', country: 'United States' },
-    { symbol: 'FTSE', name: 'FTSE 100', country: 'United Kingdom' },
-    { symbol: 'DAX', name: 'DAX', country: 'Germany' },
-    { symbol: 'CAC', name: 'CAC 40', country: 'France' },
-    { symbol: 'N225', name: 'Nikkei 225', country: 'Japan' },
-    { symbol: 'HSI', name: 'Hang Seng Index', country: 'Hong Kong' },
-    { symbol: 'SSEC', name: 'Shanghai Composite', country: 'China' },
-    { symbol: 'BSESN', name: 'BSE SENSEX', country: 'India' }
+    { symbol: '^GSPC', name: 'S&P 500', country: 'United States' },
+    { symbol: '^DJI', name: 'Dow Jones Industrial Average', country: 'United States' },
+    { symbol: '^IXIC', name: 'NASDAQ Composite', country: 'United States' },
+    { symbol: '^FTSE', name: 'FTSE 100', country: 'United Kingdom' },
+    { symbol: '^GDAXI', name: 'DAX', country: 'Germany' },
+    { symbol: '^FCHI', name: 'CAC 40', country: 'France' },
+    { symbol: '^N225', name: 'Nikkei 225', country: 'Japan' },
+    { symbol: '^HSI', name: 'Hang Seng Index', country: 'Hong Kong' },
+    { symbol: '000001.SS', name: 'Shanghai Composite', country: 'China' },
+    { symbol: '^BSESN', name: 'BSE SENSEX', country: 'India' }
 ];
 
-// Mock data for development purposes
-// In a real-world scenario, this would be fetched from an API
-const generateMockData = () => {
-    const startDate = new Date(2013, 0, 1);
-    const endDate = new Date(2023, 0, 1);
-    
-    // Generate random performance data for each index
-    return INDICES.map(index => {
-        // Generate a random starting value between 1000 and 5000
-        const startValue = Math.floor(Math.random() * 4000) + 1000;
+// Function to fetch real data from JSON files
+const fetchRealData = async () => {
+    try {
+        console.log('Fetching market data...');
+        const response = await fetch('./src/data/all_indices.json');
         
-        // Generate random yearly returns between -20% and +40%
-        const yearlyReturns = Array(10).fill().map(() => Math.random() * 0.6 - 0.2);
-        
-        // Calculate cumulative returns
-        let cumulativeReturn = 1;
-        const returns = yearlyReturns.map(ret => {
-            cumulativeReturn *= (1 + ret);
-            return cumulativeReturn;
-        });
-        
-        // Calculate monthly data points for the 10-year period
-        const monthlyData = [];
-        let currentValue = startValue;
-        
-        for (let year = 0; year < 10; year++) {
-            const yearReturn = yearlyReturns[year];
-            const monthlyReturn = Math.pow(1 + yearReturn, 1/12) - 1;
-            
-            for (let month = 0; month < 12; month++) {
-                // Add some random noise to make it look more realistic
-                const noise = (Math.random() - 0.5) * 0.02;
-                currentValue *= (1 + monthlyReturn + noise);
-                
-                const date = new Date(2013 + year, month, 1);
-                monthlyData.push({
-                    date: date.toISOString().slice(0, 7), // YYYY-MM format
-                    value: Math.round(currentValue * 100) / 100
-                });
-            }
+        if (!response.ok) {
+            throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
         }
         
-        // Calculate volatility (standard deviation of returns)
-        const monthlyReturns = monthlyData.slice(1).map((data, i) => 
-            (data.value - monthlyData[i].value) / monthlyData[i].value
-        );
-        const meanReturn = monthlyReturns.reduce((a, b) => a + b, 0) / monthlyReturns.length;
-        const squaredDiffs = monthlyReturns.map(ret => Math.pow(ret - meanReturn, 2));
-        const volatility = Math.sqrt(squaredDiffs.reduce((a, b) => a + b, 0) / squaredDiffs.length) * Math.sqrt(12); // Annualized
+        const data = await response.json();
+        console.log('Data loaded:', data.length, 'indices');
         
-        return {
-            ...index,
-            startValue,
-            endValue: monthlyData[monthlyData.length - 1].value,
-            totalReturn: (monthlyData[monthlyData.length - 1].value / startValue) - 1,
-            annualizedReturn: Math.pow((monthlyData[monthlyData.length - 1].value / startValue), 1/10) - 1,
-            volatility,
-            monthlyData
-        };
-    });
+        if (!data || data.length === 0) {
+            throw new Error('Empty data returned');
+        }
+        
+        return data;
+    } catch (error) {
+        console.error('Error fetching market data:', error);
+        showNotification('Error loading market data. Please try again later.', 'error');
+        return [];
+    }
 };
 
 // Function to initialize the report
@@ -110,11 +73,11 @@ const initializeReport = (data) => {
         e.preventDefault();
         showNotification('PDF generation is being processed...', 'info');
         
-        // Simulate PDF generation delay
+        // For local testing, direct download is simulated
         setTimeout(() => {
             showNotification('The PDF report is ready for download!', 'success');
-            // In a real implementation, this would trigger the actual PDF download
-            // window.location.href = 'Stock_Market_Indices_Report.pdf';
+            // In production, this would trigger the actual Python script via a server
+            window.open('Stock_Market_Indices_Report.pdf', '_blank');
         }, 2000);
     });
     
@@ -200,86 +163,101 @@ function populateTable(stockIndices) {
 
 // Function to populate the performer sections
 const populatePerformerSections = (bestPerformers, worstPerformers) => {
-    // Best performers
-    document.getElementById('best-index-1').textContent = bestPerformers[0].name;
-    document.getElementById('best-index-2').textContent = bestPerformers[1].name;
+    // Skip if we don't have enough data
+    if (!bestPerformers || !worstPerformers || bestPerformers.length < 2 || worstPerformers.length < 2) {
+        console.error('Not enough performer data to populate sections');
+        return;
+    }
     
-    // Worst performers
-    document.getElementById('worst-index-1').textContent = worstPerformers[0].name;
-    document.getElementById('worst-index-2').textContent = worstPerformers[1].name;
-    
-    // Add analysis text
-    document.getElementById('best-analysis-1').innerHTML = `
-        <div class="stats">
-            <div class="stat-item">
-                <span class="stat-label">10-Year Return:</span>
-                <span class="stat-value text-success">${(bestPerformers[0].totalReturn * 100).toFixed(2)}%</span>
+    try {
+        // Best performers
+        document.getElementById('best-index-1').textContent = bestPerformers[0].name;
+        document.getElementById('best-index-2').textContent = bestPerformers[1].name;
+        
+        // Worst performers
+        document.getElementById('worst-index-1').textContent = worstPerformers[0].name;
+        document.getElementById('worst-index-2').textContent = worstPerformers[1].name;
+        
+        // Add analysis text
+        document.getElementById('best-analysis-1').innerHTML = `
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-label">10-Year Return:</span>
+                    <span class="stat-value text-success">${(bestPerformers[0].totalReturn * 100).toFixed(2)}%</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Annualized Return:</span>
+                    <span class="stat-value text-success">${(bestPerformers[0].annualizedReturn * 100).toFixed(2)}%</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Volatility:</span>
+                    <span class="stat-value">${(bestPerformers[0].volatility * 100).toFixed(2)}%</span>
+                </div>
             </div>
-            <div class="stat-item">
-                <span class="stat-label">Annualized Return:</span>
-                <span class="stat-value text-success">${(bestPerformers[0].annualizedReturn * 100).toFixed(2)}%</span>
+            <p class="mt-3">The ${bestPerformers[0].name} has shown exceptional performance over the last decade, driven by strong economic growth, technological innovation, and favorable monetary policies.</p>
+        `;
+        
+        document.getElementById('best-analysis-2').innerHTML = `
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-label">10-Year Return:</span>
+                    <span class="stat-value text-success">${(bestPerformers[1].totalReturn * 100).toFixed(2)}%</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Annualized Return:</span>
+                    <span class="stat-value text-success">${(bestPerformers[1].annualizedReturn * 100).toFixed(2)}%</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Volatility:</span>
+                    <span class="stat-value">${(bestPerformers[1].volatility * 100).toFixed(2)}%</span>
+                </div>
             </div>
-            <div class="stat-item">
-                <span class="stat-label">Volatility:</span>
-                <span class="stat-value">${(bestPerformers[0].volatility * 100).toFixed(2)}%</span>
+            <p class="mt-3">The ${bestPerformers[1].name} has delivered consistent growth throughout the decade, benefiting from strong market fundamentals and strategic sectoral positioning.</p>
+        `;
+        
+        const worstReturn1 = (worstPerformers[0].totalReturn * 100).toFixed(2);
+        const worstReturn2 = (worstPerformers[1].totalReturn * 100).toFixed(2);
+        const worstReturnClass1 = worstReturn1 >= 0 ? 'text-success' : 'text-danger';
+        const worstReturnClass2 = worstReturn2 >= 0 ? 'text-success' : 'text-danger';
+        
+        document.getElementById('worst-analysis-1').innerHTML = `
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-label">10-Year Return:</span>
+                    <span class="stat-value ${worstReturnClass1}">${worstReturn1}%</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Annualized Return:</span>
+                    <span class="stat-value ${worstReturnClass1}">${(worstPerformers[0].annualizedReturn * 100).toFixed(2)}%</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Volatility:</span>
+                    <span class="stat-value">${(worstPerformers[0].volatility * 100).toFixed(2)}%</span>
+                </div>
             </div>
-        </div>
-        <p class="mt-3">The ${bestPerformers[0].name} has shown exceptional performance over the last decade, driven by strong economic growth, technological innovation, and favorable monetary policies.</p>
-    `;
-    
-    document.getElementById('best-analysis-2').innerHTML = `
-        <div class="stats">
-            <div class="stat-item">
-                <span class="stat-label">10-Year Return:</span>
-                <span class="stat-value text-success">${(bestPerformers[1].totalReturn * 100).toFixed(2)}%</span>
+            <p class="mt-3">The ${worstPerformers[0].name} has faced challenges due to economic headwinds, regulatory concerns, and structural market shifts affecting investor sentiment.</p>
+        `;
+        
+        document.getElementById('worst-analysis-2').innerHTML = `
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-label">10-Year Return:</span>
+                    <span class="stat-value ${worstReturnClass2}">${worstReturn2}%</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Annualized Return:</span>
+                    <span class="stat-value ${worstReturnClass2}">${(worstPerformers[1].annualizedReturn * 100).toFixed(2)}%</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Volatility:</span>
+                    <span class="stat-value">${(worstPerformers[1].volatility * 100).toFixed(2)}%</span>
+                </div>
             </div>
-            <div class="stat-item">
-                <span class="stat-label">Annualized Return:</span>
-                <span class="stat-value text-success">${(bestPerformers[1].annualizedReturn * 100).toFixed(2)}%</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Volatility:</span>
-                <span class="stat-value">${(bestPerformers[1].volatility * 100).toFixed(2)}%</span>
-            </div>
-        </div>
-        <p class="mt-3">The ${bestPerformers[1].name} has delivered consistent growth throughout the decade, benefiting from strong market fundamentals and strategic sectoral positioning.</p>
-    `;
-    
-    document.getElementById('worst-analysis-1').innerHTML = `
-        <div class="stats">
-            <div class="stat-item">
-                <span class="stat-label">10-Year Return:</span>
-                <span class="stat-value text-danger">${(worstPerformers[0].totalReturn * 100).toFixed(2)}%</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Annualized Return:</span>
-                <span class="stat-value text-danger">${(worstPerformers[0].annualizedReturn * 100).toFixed(2)}%</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Volatility:</span>
-                <span class="stat-value">${(worstPerformers[0].volatility * 100).toFixed(2)}%</span>
-            </div>
-        </div>
-        <p class="mt-3">The ${worstPerformers[0].name} has underperformed relative to other global indices, facing challenges from economic uncertainty, regulatory pressures, and structural market changes.</p>
-    `;
-    
-    document.getElementById('worst-analysis-2').innerHTML = `
-        <div class="stats">
-            <div class="stat-item">
-                <span class="stat-label">10-Year Return:</span>
-                <span class="stat-value text-danger">${(worstPerformers[1].totalReturn * 100).toFixed(2)}%</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Annualized Return:</span>
-                <span class="stat-value text-danger">${(worstPerformers[1].annualizedReturn * 100).toFixed(2)}%</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Volatility:</span>
-                <span class="stat-value">${(worstPerformers[1].volatility * 100).toFixed(2)}%</span>
-            </div>
-        </div>
-        <p class="mt-3">The ${worstPerformers[1].name} has struggled with consistent growth, impacted by geopolitical tensions, currency fluctuations, and sector-specific challenges.</p>
-    `;
+            <p class="mt-3">The ${worstPerformers[1].name} has underperformed due to macroeconomic pressures, geopolitical tensions, and reduced investor confidence in its market.</p>
+        `;
+    } catch (error) {
+        console.error('Error populating performer sections:', error);
+    }
 };
 
 // Function to populate analysis sections
@@ -738,39 +716,55 @@ function enableLazyLoading() {
     });
 }
 
-// Add lazy loading functionality to initUI
+// Function to initialize the application
 function initUI() {
+    // Show loading screen
+    const loadingScreen = document.getElementById('loading-screen');
+    if (loadingScreen) {
+        loadingScreen.classList.remove('hidden');
+    }
+    
+    // Initialize UI components that don't depend on data
     initDarkModeToggle();
     initBackToTop();
     initSmoothScroll();
-    initZoomReset();
     initNavbarBehavior();
-    handleChartResize();
-    fixMobileNav();
-    adjustChartHeights();
-    enableLazyLoading();
+    
+    console.log('Initializing UI and fetching data...');
+    
+    // Fetch real data and initialize the report
+    fetchRealData()
+        .then(data => {
+            if (data && data.length > 0) {
+                console.log('Data loaded successfully', data);
+                initializeReport(data);
+                showNotification('Stock market data loaded successfully!', 'success');
+            } else {
+                console.error('No data returned from fetchRealData');
+                showNotification('No market data available. Please try again later.', 'error');
+            }
+            
+            // Hide loading screen once data is loaded
+            hideLoadingScreen();
+            
+            // Enable lazy loading
+            enableLazyLoading();
+            
+            // Set chart heights
+            adjustChartHeights();
+            
+            // Fix mobile nav issues
+            fixMobileNav();
+            
+            // Fix zoom issues
+            initZoomReset();
+        })
+        .catch(error => {
+            console.error('Failed to initialize report:', error);
+            showNotification('Failed to load market data. Please refresh the page.', 'error');
+            hideLoadingScreen();
+        });
 }
 
-// When the DOM is loaded, initialize the report with mock data
-document.addEventListener('DOMContentLoaded', () => {
-    initUI();
-    // Simulate loading state
-    const sections = document.querySelectorAll('section');
-    sections.forEach(section => {
-        section.classList.add('loading');
-    });
-    
-    // In a real implementation, data would be fetched from an API
-    setTimeout(() => {
-        const data = generateMockData();
-        initializeReport(data);
-        
-        // Remove loading state
-        sections.forEach(section => {
-            section.classList.remove('loading');
-        });
-        
-        // Show welcome notification
-        showNotification('Welcome to the Stock Market Indices Analysis Report!', 'info');
-    }, 1000);
-});
+// Initialize when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', initUI);

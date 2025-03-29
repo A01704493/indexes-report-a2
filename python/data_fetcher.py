@@ -11,6 +11,8 @@ import json
 import datetime
 import pandas as pd
 import yfinance as yf
+import time
+import numpy as np
 
 # List of major indices to analyze with their Yahoo Finance tickers
 INDICES = [
@@ -22,7 +24,7 @@ INDICES = [
     {"symbol": "^FCHI", "name": "CAC 40", "country": "France"},
     {"symbol": "^N225", "name": "Nikkei 225", "country": "Japan"},
     {"symbol": "^HSI", "name": "Hang Seng Index", "country": "Hong Kong"},
-    {"symbol": "^SSEC", "name": "Shanghai Composite", "country": "China"},
+    {"symbol": "000001.SS", "name": "Shanghai Composite", "country": "China"},
     {"symbol": "^BSESN", "name": "BSE SENSEX", "country": "India"}
 ]
 
@@ -50,36 +52,58 @@ def fetch_indices_data(start_date, end_date, save_path="../src/data"):
         
         try:
             # Fetch data from Yahoo Finance
-            ticker_data = yf.download(
-                index["symbol"],
-                start=start_date,
-                end=end_date,
-                progress=False
+            ticker = yf.Ticker(index["symbol"])
+            ticker_data = ticker.history(
+                period="10y",
+                interval="1mo",
+                auto_adjust=True,
             )
             
+            # If the data is empty, try again with a different interval
+            if ticker_data.empty:
+                print(f"No data found for {index['name']} using monthly interval. Trying weekly...")
+                ticker_data = ticker.history(
+                    period="10y",
+                    interval="1wk",
+                    auto_adjust=True,
+                )
+                # Resample to monthly
+                if not ticker_data.empty:
+                    ticker_data = ticker_data.resample('ME').last()
+            
+            # Skip if still no data
+            if ticker_data.empty:
+                print(f"No data available for {index['name']}. Skipping...")
+                continue
+            
             # Process monthly data
-            monthly_data = ticker_data['Adj Close'].resample('M').last()
             monthly_data_list = []
             
-            for date, value in monthly_data.items():
+            for date, row in ticker_data.iterrows():
                 monthly_data_list.append({
                     "date": date.strftime("%Y-%m"),
-                    "value": round(float(value), 2)
+                    "value": round(float(row["Close"]), 2)
                 })
             
+            # Skip if no data points
+            if not monthly_data_list:
+                print(f"No valid data points for {index['name']}. Skipping...")
+                continue
+            
             # Calculate returns and volatility
-            returns = monthly_data.pct_change().dropna()
-            total_return = (monthly_data.iloc[-1] / monthly_data.iloc[0]) - 1
-            annualized_return = (1 + total_return) ** (1 / (len(monthly_data) / 12)) - 1
-            volatility = returns.std() * (12 ** 0.5)  # Annualized
+            values = np.array([point["value"] for point in monthly_data_list])
+            returns = np.diff(values) / values[:-1]
+            total_return = (values[-1] / values[0]) - 1
+            annualized_return = (1 + total_return) ** (1 / (len(values) / 12)) - 1
+            volatility = np.std(returns) * np.sqrt(12)  # Annualized
             
             # Create index data object
             index_data = {
                 "symbol": index["symbol"],
                 "name": index["name"],
                 "country": index["country"],
-                "startValue": float(monthly_data.iloc[0]),
-                "endValue": float(monthly_data.iloc[-1]),
+                "startValue": float(values[0]),
+                "endValue": float(values[-1]),
                 "totalReturn": float(total_return),
                 "annualizedReturn": float(annualized_return),
                 "volatility": float(volatility),
@@ -87,7 +111,7 @@ def fetch_indices_data(start_date, end_date, save_path="../src/data"):
             }
             
             # Save individual index data to JSON file
-            with open(f"{save_path}/{index['symbol'].replace('^', '')}.json", 'w') as f:
+            with open(f"{save_path}/{index['symbol'].replace('^', '').replace('.', '_')}.json", 'w') as f:
                 json.dump(index_data, f, indent=2)
             
             # Add to all indices data
@@ -104,6 +128,9 @@ def fetch_indices_data(start_date, end_date, save_path="../src/data"):
             })
             
             print(f"Successfully processed {index['name']}.")
+            
+            # Add a small delay to avoid rate limiting
+            time.sleep(1)
             
         except Exception as e:
             print(f"Error processing {index['name']}: {str(e)}")

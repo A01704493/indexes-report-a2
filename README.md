@@ -1,6 +1,6 @@
 # Global Stock Market Indices Analysis (2013-2023)
 
-[![Deploy to GitHub Pages](https://github.com/username/indexes-report-a2/actions/workflows/deploy.yml/badge.svg)](https://github.com/username/indexes-report-a2/actions/workflows/deploy.yml)
+[![Deploy to GitHub Pages](https://github.com/inakizamores/indexes-report-a2/actions/workflows/deploy.yml/badge.svg)](https://github.com/inakizamores/indexes-report-a2/actions/workflows/deploy.yml)
 [![MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![made-with-javascript](https://img.shields.io/badge/Made%20with-JavaScript-1f425f.svg)](https://www.javascript.com)
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg)](https://www.python.org/)
@@ -11,7 +11,7 @@ An interactive analysis of the performance, volatility, and key drivers of the t
 
 ## 🚀 Live Demo
 
-View the live report: [Global Stock Market Indices Analysis](https://username.github.io/indexes-report-a2/)
+View the live report: [Global Stock Market Indices Analysis](https://inakizamores.github.io/indexes-report-a2/)
 
 ## ✨ Features
 
@@ -94,9 +94,13 @@ View the live report: [Global Stock Market Indices Analysis](https://username.gi
 
 ### Deploying to Your Own GitHub Pages
 1. Fork this repository
-2. In your forked repository, go to Settings > Pages
-3. Set the source branch to `gh-pages`
-4. Your site will be available at `https://[your-username].github.io/indexes-report-a2/`
+2. The repository includes a GitHub Actions workflow that will automatically:
+   - Fetch the latest market data using Python scripts
+   - Generate the PDF report
+   - Deploy everything to GitHub Pages
+3. After forking, go to Settings > Pages
+4. Verify that the source branch is set to `gh-pages`
+5. Your site will be available at `https://[your-username].github.io/indexes-report-a2/`
 
 ## 🔄 Data Updates
 

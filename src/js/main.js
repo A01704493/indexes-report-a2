@@ -71,15 +71,29 @@ const initializeReport = (data) => {
     // Set up PDF download link
     document.getElementById('download-pdf').addEventListener('click', (e) => {
         e.preventDefault();
-        showNotification('PDF generation is being processed...', 'info');
+        showNotification('PDF is being prepared for download...', 'info');
         
-        // For local testing, direct download is simulated
+        // Short delay to simulate preparing the PDF
         setTimeout(() => {
             showNotification('The PDF report is ready for download!', 'success');
-            // In production, this would trigger the actual Python script via a server
-            window.open('Stock_Market_Indices_Report.pdf', '_blank');
-        }, 2000);
+            window.location.href = 'Stock_Market_Indices_Report.pdf';
+        }, 1500);
     });
+    
+    // Also set up the footer PDF download link
+    const footerPdfLink = document.getElementById('download-pdf-footer');
+    if (footerPdfLink) {
+        footerPdfLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showNotification('PDF is being prepared for download...', 'info');
+            
+            // Short delay to simulate preparing the PDF
+            setTimeout(() => {
+                showNotification('The PDF report is ready for download!', 'success');
+                window.location.href = 'Stock_Market_Indices_Report.pdf';
+            }, 1500);
+        });
+    }
     
     // Initialize UI enhancements
     initializeUIEnhancements();

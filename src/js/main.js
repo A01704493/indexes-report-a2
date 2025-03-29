@@ -94,7 +94,7 @@ const initializeReport = (data) => {
     const worstPerformers = sortedIndices.slice(-2).reverse();
     
     // Populate overview table
-    populateIndicesTable(sortedIndices);
+    populateTable(sortedIndices);
     
     // Initialize charts
     initializeCharts(data, bestPerformers, worstPerformers);
@@ -122,44 +122,81 @@ const initializeReport = (data) => {
     initializeUIEnhancements();
 };
 
-// Function to populate the indices table
-const populateIndicesTable = (indices) => {
+// Populate mobile-friendly index cards for small screens
+function populateMobileIndexCards(stockIndices) {
+    const mobileCardsContainer = document.getElementById('mobile-indices-cards');
+    if (!mobileCardsContainer) return;
+    
+    mobileCardsContainer.innerHTML = '';
+    
+    stockIndices.forEach(index => {
+        const totalReturnValue = (index.totalReturn * 100).toFixed(2);
+        const volatilityValue = (index.volatility * 100).toFixed(2);
+        const returnClass = totalReturnValue >= 0 ? 'text-success' : 'text-danger';
+        const returnIcon = totalReturnValue >= 0 ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down';
+        
+        const cardHtml = `
+            <div class="col-12">
+                <div class="card border-0 shadow-sm mb-2">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0 fw-bold">${index.name}</h6>
+                            <span class="badge bg-light text-dark">${index.country}</span>
+                        </div>
+                        <div class="row g-2 text-center mt-1">
+                            <div class="col-6">
+                                <div class="small text-muted">10-Year Return</div>
+                                <div class="fw-bold ${returnClass}">
+                                    <i class="fas ${returnIcon} me-1 small"></i>
+                                    ${totalReturnValue}%
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="small text-muted">Volatility</div>
+                                <div class="fw-bold">${volatilityValue}%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        mobileCardsContainer.innerHTML += cardHtml;
+    });
+}
+
+// Update the populateTable function to also populate mobile view
+function populateTable(stockIndices) {
     const tableBody = document.getElementById('indices-table');
+    if (!tableBody) return;
+    
     tableBody.innerHTML = '';
     
-    indices.forEach((index, i) => {
+    stockIndices.forEach(index => {
+        const totalReturnValue = (index.totalReturn * 100).toFixed(2);
+        const volatilityValue = (index.volatility * 100).toFixed(2);
+        const returnClass = totalReturnValue >= 0 ? 'text-success' : 'text-danger';
+        const returnIcon = totalReturnValue >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
+        
         const row = document.createElement('tr');
-        
-        // Add highlight class for best and worst performers
-        if (i < 2) {
-            row.classList.add('table-success');
-        } else if (i >= indices.length - 2) {
-            row.classList.add('table-danger');
-        }
-        
-        const nameCell = document.createElement('td');
-        nameCell.innerHTML = `<strong>${index.name}</strong>`;
-        row.appendChild(nameCell);
-        
-        const countryCell = document.createElement('td');
-        countryCell.textContent = index.country;
-        row.appendChild(countryCell);
-        
-        const returnCell = document.createElement('td');
-        const returnValue = (index.totalReturn * 100).toFixed(2);
-        returnCell.innerHTML = `<span class="${returnValue >= 0 ? 'text-success' : 'text-danger'}">${returnValue}%</span>`;
-        row.appendChild(returnCell);
-        
-        const volatilityCell = document.createElement('td');
-        volatilityCell.innerHTML = `<span class="text-secondary">${(index.volatility * 100).toFixed(2)}%</span>`;
-        row.appendChild(volatilityCell);
+        row.innerHTML = `
+            <td><strong>${index.name}</strong></td>
+            <td>${index.country}</td>
+            <td class="text-end ${returnClass}">
+                <i class="fas ${returnIcon} me-1 small"></i>${totalReturnValue}%
+            </td>
+            <td class="text-end">${volatilityValue}%</td>
+            <td class="text-center">
+                <div class="sparkline" data-index="${index.name}"></div>
+            </td>
+        `;
         
         tableBody.appendChild(row);
-        
-        // Add animation delay based on index
-        row.style.animationDelay = `${i * 0.1}s`;
     });
-};
+    
+    // Also populate the mobile view
+    populateMobileIndexCards(stockIndices);
+}
 
 // Function to populate the performer sections
 const populatePerformerSections = (bestPerformers, worstPerformers) => {
@@ -596,13 +633,122 @@ function initNavbarBehavior() {
     });
 }
 
-// Initialize all UI components
+// Handle responsive chart resizing
+function handleChartResize() {
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+            // Get all chart canvases
+            const charts = document.querySelectorAll('canvas');
+            charts.forEach(canvas => {
+                const chart = Chart.getChart(canvas);
+                if (chart) {
+                    chart.resize();
+                }
+            });
+        }, 250); // Debounce resize events
+    });
+}
+
+// Fix for mobile nav collapse
+function fixMobileNav() {
+    const navbarToggler = document.querySelector('.navbar-toggler');
+    const navbarCollapse = document.querySelector('.navbar-collapse');
+    
+    if (navbarToggler && navbarCollapse) {
+        document.querySelectorAll('.navbar-collapse .nav-link').forEach(item => {
+            item.addEventListener('click', () => {
+                if (window.innerWidth < 992) {
+                    navbarCollapse.classList.remove('show');
+                }
+            });
+        });
+    }
+}
+
+// Adjust chart heights for different screen sizes
+function adjustChartHeights() {
+    const chartContainers = document.querySelectorAll('.chart-container');
+    
+    function setChartHeights() {
+        chartContainers.forEach(container => {
+            if (window.innerWidth < 576) {
+                container.style.height = '300px';
+            } else if (window.innerWidth < 768) {
+                container.style.height = '350px';
+            } else if (window.innerWidth < 992) {
+                container.style.height = '400px';
+            } else {
+                container.style.height = '450px';
+            }
+        });
+    }
+    
+    // Set initial heights
+    setChartHeights();
+    
+    // Adjust on resize
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(setChartHeights, 250);
+    });
+}
+
+// Hide loading screen when the page is fully loaded
+function hideLoadingScreen() {
+    const loadingScreen = document.getElementById('loading-screen');
+    if (loadingScreen) {
+        // Add hidden class with slight delay to allow for smooth transition
+        setTimeout(() => {
+            loadingScreen.classList.add('hidden');
+            
+            // Remove from DOM after transition completes
+            setTimeout(() => {
+                loadingScreen.remove();
+            }, 500); // Match the transition duration
+        }, 800);
+    }
+}
+
+// Listen for window load event
+window.addEventListener('load', hideLoadingScreen);
+
+// Improved performance with lazy loading
+function enableLazyLoading() {
+    // Use Intersection Observer to detect when elements enter viewport
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                observer.unobserve(entry.target); // Stop observing once visible
+            }
+        });
+    }, {
+        root: null, // viewport
+        rootMargin: '0px',
+        threshold: 0.1 // trigger when 10% visible
+    });
+    
+    // Observe all sections and cards
+    document.querySelectorAll('section, .performer-card, .highlight-card').forEach(element => {
+        element.classList.add('lazy-load');
+        observer.observe(element);
+    });
+}
+
+// Add lazy loading functionality to initUI
 function initUI() {
     initDarkModeToggle();
     initBackToTop();
     initSmoothScroll();
     initZoomReset();
     initNavbarBehavior();
+    handleChartResize();
+    fixMobileNav();
+    adjustChartHeights();
+    enableLazyLoading();
 }
 
 // When the DOM is loaded, initialize the report with mock data

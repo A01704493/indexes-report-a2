@@ -2,11 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Global Stock Market Indices Analysis (2013-2023)</title>
     <meta name="description" content="An interactive analysis of the top 10 global stock market indices over the past decade, with performance metrics, volatility analysis, and market insights.">
     <meta name="keywords" content="stock market, indices, financial analysis, investing, S&P 500, NASDAQ, Dow Jones, FTSE 100, DAX, Nikkei 225">
     <meta name="author" content="Market Indices Analysis Team">
+    <meta name="theme-color" content="#2c3e50">
     
     <!-- Favicon -->
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -18,6 +20,12 @@
     <meta property="og:image" content="https://via.placeholder.com/1200x630?text=Stock+Market+Indices+Analysis">
     <meta property="og:url" content="https://username.github.io/indexes-report-a2/">
     <meta property="og:type" content="website">
+    
+    <!-- Twitter Card data -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Global Stock Market Indices Analysis">
+    <meta name="twitter:description" content="Interactive analysis of global market indices (2013-2023)">
+    <meta name="twitter:image" content="https://via.placeholder.com/1200x630?text=Stock+Market+Indices+Analysis">
     
     <!-- CSS Libraries -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
@@ -36,6 +44,17 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
 </head>
 <body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <div class="spinner">
+                <i class="fas fa-chart-line fa-spin"></i>
+            </div>
+            <h2>Loading Analytics</h2>
+            <p>Preparing market data visualization...</p>
+        </div>
+    </div>
+
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
         <div class="container">
@@ -77,13 +96,13 @@
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-lg-10">
-                    <h1 class="display-4 fw-bold">Global Stock Market Indices</h1>
-                    <p class="lead mb-4">10-Year Performance Analysis (2013-2023)</p>
-                    <div class="d-flex justify-content-center gap-3">
-                        <a href="#" id="download-pdf" class="btn btn-light btn-lg">
-                            <i class="fas fa-file-pdf me-2"></i>Download PDF Report
+                    <h1 class="display-4 fw-bold mb-3">Global Stock Market Indices</h1>
+                    <p class="lead mb-4">A comprehensive 10-Year Performance Analysis (2013-2023)</p>
+                    <div class="d-flex flex-wrap justify-content-center gap-3">
+                        <a href="#" id="download-pdf" class="btn btn-light btn-lg mb-2">
+                            <i class="fas fa-file-pdf me-2"></i>Download PDF
                         </a>
-                        <a href="https://github.com/username/indexes-report-a2" target="_blank" class="btn btn-outline-light btn-lg">
+                        <a href="https://github.com/username/indexes-report-a2" target="_blank" class="btn btn-outline-light btn-lg mb-2">
                             <i class="fab fa-github me-2"></i>View on GitHub
                         </a>
                     </div>
@@ -137,7 +156,7 @@
             </div>
         </section>
 
-        <!-- Overview Table Section -->
+        <!-- Overview Table Section with better mobile layout -->
         <section id="overview" class="mb-5 card-section">
             <div class="section-card">
                 <h2><i class="fas fa-globe section-icon"></i>Overview of Analyzed Indices</h2>
@@ -147,9 +166,9 @@
                             <tr>
                                 <th>Index</th>
                                 <th>Country/Region</th>
-                                <th>10-Year Return</th>
-                                <th>Volatility</th>
-                                <th>Trend</th>
+                                <th class="text-end">10-Year Return</th>
+                                <th class="text-end">Volatility</th>
+                                <th class="text-center">Trend</th>
                             </tr>
                         </thead>
                         <tbody id="indices-table">
@@ -159,6 +178,14 @@
                 </div>
                 <div class="note mt-3">
                     <small><i class="fas fa-info-circle me-1"></i>Returns are calculated based on price appreciation without accounting for dividends</small>
+                </div>
+                
+                <!-- Mobile-friendly index summary cards, shown only on small screens -->
+                <div class="d-md-none mt-4" id="mobile-indices-summary">
+                    <h5 class="text-center mb-3">Indices Summary</h5>
+                    <div class="row g-3" id="mobile-indices-cards">
+                        <!-- This will be populated via JavaScript for mobile view -->
+                    </div>
                 </div>
             </div>
         </section>
@@ -186,9 +213,9 @@
         <!-- Best Performers Section -->
         <section id="best-performers" class="mb-5">
             <h2 class="section-title"><i class="fas fa-trophy me-2"></i>Best Performing Indices</h2>
-            <div class="row g-4">
-                <div class="col-md-6">
-                    <div class="performer-card top-performer">
+            <div class="row g-4 mb-4">
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <div class="performer-card top-performer h-100">
                         <div class="performer-header">
                             <span class="badge">Top Performer #1</span>
                         </div>
@@ -225,8 +252,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="performer-card top-performer">
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <div class="performer-card top-performer h-100">
                         <div class="performer-header">
                             <span class="badge">Top Performer #2</span>
                         </div>
@@ -269,9 +296,9 @@
         <!-- Worst Performers Section -->
         <section id="worst-performers" class="mb-5">
             <h2 class="section-title"><i class="fas fa-arrow-trend-down me-2"></i>Worst Performing Indices</h2>
-            <div class="row g-4">
-                <div class="col-md-6">
-                    <div class="performer-card bottom-performer">
+            <div class="row g-4 mb-4">
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <div class="performer-card bottom-performer h-100">
                         <div class="performer-header">
                             <span class="badge">Worst Performer #1</span>
                         </div>
@@ -308,8 +335,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="performer-card bottom-performer">
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <div class="performer-card bottom-performer h-100">
                         <div class="performer-header">
                             <span class="badge">Worst Performer #2</span>
                         </div>
@@ -427,8 +454,8 @@
     <footer class="text-white py-4">
         <div class="container">
             <div class="row g-4">
-                <div class="col-md-6">
-                    <h5><i class="fas fa-chart-line me-2"></i>Global Stock Market Indices Analysis</h5>
+                <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                    <h5><i class="fas fa-chart-line me-2"></i>Global Stock Market Indices</h5>
                     <p class="mb-2">A comprehensive 10-year analysis of global market performance.</p>
                     <div class="social-links">
                         <a href="https://github.com/username/indexes-report-a2" class="me-3" target="_blank" aria-label="GitHub Repository">
@@ -442,7 +469,7 @@
                         </a>
                     </div>
                 </div>
-                <div class="col-md-6 text-md-end">
+                <div class="col-md-6 text-center text-md-end">
                     <p class="mb-1">
                         <i class="fas fa-database me-1"></i>Data sourced from financial markets APIs
                     </p>
